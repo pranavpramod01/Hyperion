@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use tracing_subscriber::{fmt, EnvFilter};
 
 // Health status for any running component.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +20,27 @@ pub struct Config {
 
 fn default_log_level() -> String { "info".to_string() }
 fn default_data_dir() -> String { "data".to_string() }
+
+// Initialize logging based on the env or config. Prefer HYPERION_LOG if set or cfg.log_level. from config. Fallback to "info".
+pub fn init_telemetry(cfg: &Config) -> Result<()> {
+    // Determine the log level filter.
+    let level_from_env = std::env::var("HYPERION_LOG").ok();
+    let filter = match level_from_env {
+        Some(s) => EnvFilter::try_new(s),
+        None => EnvFilter::try_new(cfg.log_level.clone()),
+    }
+    .unwrap_or_else(|_| EnvFilter::new("info"));
+
+    // Set up the subscriber with the filter and a formatter.
+    let _ = fmt()
+        .with_env_filter(filter)
+        .with_target(true)
+        .try_init();
+
+    // Emit a small startup line.
+    tracing::info!("telemetry initialized");
+    Ok(())
+}
 
 // Error type placeholder.
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -131,6 +153,7 @@ mod tests {
         assert_eq!(cfg.data_dir, "data");
     }
 
+    // Test configuration loading from a valid file.
     #[test]
     fn load_config_from_file() {
         // Create a temporary TOML file.
@@ -151,5 +174,13 @@ mod tests {
         assert_eq!(cfg.data_dir, "test_data");
 
         let _ = std::fs::remove_file(&path);
+    }
+
+    // Test telemetry initialization.
+    #[test]
+    fn telemetry_init_smoke() {
+        let cfg = Config { log_level: "debug".into(), data_dir: "data".into() };
+        let _ = init_telemetry(&cfg); // should not panic
+        tracing::debug!("debug line after init");
     }
 }

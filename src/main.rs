@@ -1,4 +1,4 @@
-use hyperion::{Module, Health, Result, load_config}; // lib.rs
+use hyperion::{Module, Health, Result, load_config, init_telemetry}; // lib.rs
 
 struct Hello;
 
@@ -32,9 +32,10 @@ fn main() -> Result<()> {
     // module.stop()?;
     // Ok(())
 
-    // Config demonstration
+    // Configuration and telemetry demonstration
     let cfg = load_config()?;
-    println!("HYPERION v{}", VERSION);
-    println!("config: log_level={}, data_dir={}", cfg.log_level, cfg.data_dir);
+    init_telemetry(&cfg)?;
+    tracing::info!("HYPERION v{}", VERSION);
+    tracing::info!("config: log_level={}, data_dir={}", cfg.log_level, cfg.data_dir);
     Ok(())
 }

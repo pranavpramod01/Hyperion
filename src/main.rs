@@ -1,4 +1,4 @@
-use hyperion::{Module, Health, Result}; // lib.rs
+use hyperion::{Module, Health, Result, load_config}; // lib.rs
 
 struct Hello;
 
@@ -22,11 +22,19 @@ impl Module for Hello {
     }
 }
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 fn main() -> Result<()> {
     // Lifecycle demonstration
-    let mut module = Hello;
-    module.start()?;
-    println!("[{}] Health: {:?}", module.name(), module.health());
-    module.stop()?;
+    // let mut module = Hello;
+    // module.start()?;
+    // println!("[{}] Health: {:?}", module.name(), module.health());
+    // module.stop()?;
+    // Ok(())
+
+    // Config demonstration
+    let cfg = load_config()?;
+    println!("HYPERION v{}", VERSION);
+    println!("config: log_level={}, data_dir={}", cfg.log_level, cfg.data_dir);
     Ok(())
 }

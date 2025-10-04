@@ -1,41 +1,45 @@
-use hyperion::{Module, Health, Result, load_config, init_telemetry}; // lib.rs
+use hyperion::{init_telemetry, load_config, Module, Runtime, Health, Result};
 
-struct Hello;
+struct Hello {
+    running: bool,
+}
 
 impl Module for Hello {
-    fn name(&self) -> &str {
-        "Hello"
-    }
-
+    fn name(&self) -> &str { "hello" }
     fn start(&mut self) -> Result<()> {
-        println!("[{}] start", self.name());
+        self.running = true;
+        tracing::info!("[{}] start", self.name());
         Ok(())
     }
-
     fn stop(&mut self) -> Result<()> {
-        println!("[{}] stop", self.name());
+        self.running = false;
+        tracing::info!("[{}] stop", self.name());
         Ok(())
     }
-
     fn health(&self) -> Health {
-        Health::Healthy
+        if self.running { Health::Healthy } else { Health::Degraded { reason: "stopped".into() } }
     }
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() -> Result<()> {
-    // Lifecycle demonstration
-    // let mut module = Hello;
-    // module.start()?;
-    // println!("[{}] Health: {:?}", module.name(), module.health());
-    // module.stop()?;
-    // Ok(())
-
-    // Configuration and telemetry demonstration
+    // Load config + init logs
     let cfg = load_config()?;
     init_telemetry(&cfg)?;
-    tracing::info!("HYPERION v{}", VERSION);
-    tracing::info!("config: log_level={}, data_dir={}", cfg.log_level, cfg.data_dir);
+
+    tracing::info!(version = VERSION, data_dir = %cfg.data_dir, "HYPERION starting");
+
+    // Build a tiny runtime and register one demo module
+    let mut rt = Runtime::new();
+    rt.register(Hello { running: false });
+
+    // Start -> report health -> stop
+    rt.start_all()?;
+    tracing::info!(rt_overall = format!("{:?}", rt.overall_health()), "runtime health after start");
+
+    rt.stop_all()?;
+    tracing::info!(rt_overall = format!("{:?}", rt.overall_health()), "runtime health after stop");
+
     Ok(())
 }

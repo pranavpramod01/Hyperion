@@ -11,6 +11,6 @@ pub use module::{Health, Module, Result, Error};
 pub use config::{Config, load_config};
 pub use telemetry::init_telemetry;
 pub use vaultline::{Vaultline, Event};
-pub use axiom::Runtime;
+pub use axiom::{Runtime};
 pub use epoch::{Scheduler, Job};
 pub use halodeck::{Cli as HaloCli, Command as HaloCommand};

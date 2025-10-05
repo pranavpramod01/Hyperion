@@ -60,10 +60,7 @@ fn main() -> Result<()> {
     // Runtime demo
     let mut rt = Runtime::new();
     rt.register(Hello { running: false });
-    rt.start_all()?;
-    tracing::info!(overall = ?rt.overall_health(), "runtime health after start");
-    rt.stop_all()?;
-    tracing::info!(overall = ?rt.overall_health(), "runtime health after stop");
+    rt.run_until_ctrlc()?;
 
     Ok(())
 }

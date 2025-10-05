@@ -1,4 +1,7 @@
 use crate::module::{Module, Result, Health};
+use std::sync::{atomic::{AtomicBool, Ordering}, Arc};
+use std::thread;
+use std::time::Duration;
 
 /// Minimal runtime shell that manages registered modules.
 pub struct Runtime {
@@ -33,6 +36,40 @@ impl Runtime {
             }
         }
         Health::Healthy
+    }
+
+    // Start modules and block until Ctrl-C, then stop modules. Returns Ok even if the Ctrl-C handler was already installed elsewhere.
+    pub fn run_until_ctrlc(&mut self) -> Result<()> {
+        // Start modules
+        self.start_all()?;
+        tracing::info!("runtime: started; press Ctrl-C to stop");
+
+        // Setup Ctrl-C handler
+        let shutdown = Arc::new(AtomicBool::new(false));
+
+        // Clone for handler
+        {
+            let flag = shutdown.clone();
+            let _ = ctrlc::set_handler(move || {
+                flag.store(true, Ordering::SeqCst);
+            });
+        }
+
+        // Wait for signal
+        while !shutdown.load(Ordering::SeqCst) {
+            thread::sleep(Duration::from_millis(50));
+        }
+
+        // Stop modules
+        tracing::info!("runtime: shutting down");
+        self.stop_all()?;
+        tracing::info!("runtime: stopped");
+        Ok(())
+    }
+
+    // Check if Ctrl-C has been pressed (non-blocking); returns true if shutdown requested.
+    pub fn poll_ctrl_c(shutdown: &AtomicBool) -> bool {
+        shutdown.swap(false, Ordering::SeqCst)
     }
 }
 

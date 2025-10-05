@@ -2,7 +2,7 @@ use std::path::Path;
 
 use hyperion::{
     init_telemetry, load_config, Result, Runtime, Module, Health,
-    Vaultline, Event,
+    Vaultline, Event, Scheduler
 };
 
 struct Hello {
@@ -45,6 +45,21 @@ fn main() -> Result<()> {
     if let Some(last) = vault.tail(1).into_iter().next() {
         tracing::info!(last_level = %last.level, last_source = %last.source, last_msg = %last.message, "vaultline tail(1)");
     }
+
+    // Epoch demo
+    let mut scheduler = Scheduler::new();
+
+    let _j1 = scheduler.enqueue("email", "Welcome to Hyperion!");
+    let _j2 = scheduler.enqueue("email", "How is Hyperion?");
+
+    // deque, pretend to process, complete
+    if let Some(job) = scheduler.dequeue("email", std::time::Duration::from_secs(5)) {
+        tracing::info!(id = job.id, kind = %job.kind, payload = %job.payload, "dequeued job");
+        scheduler.complete(job.id)?;
+        vault.append(Event::now("epoch", "info", format!("completed job {}", job.id)))?;
+    }
+
+    tracing::info!(depth = scheduler.depth(), leased = scheduler.leased_count(), "scheduler status");
 
     // Runtime demo
     let mut rt = Runtime::new();

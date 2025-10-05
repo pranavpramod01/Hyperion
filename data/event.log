@@ -1,0 +1,9 @@
+{"ts_ms":1759687515306,"source":"axiom","level":"info","message":"runtime starting","kv":null}
+{"ts_ms":1759687515306,"source":"hello","level":"info","message":"hello module warming up","kv":null}
+{"ts_ms":1759687515307,"source":"epoch","level":"info","message":"completed job 1","kv":null}
+{"ts_ms":1759687688603,"source":"axiom","level":"info","message":"runtime starting","kv":null}
+{"ts_ms":1759687688603,"source":"hello","level":"info","message":"hello module warming up","kv":null}
+{"ts_ms":1759687688603,"source":"epoch","level":"info","message":"completed job 1","kv":null}
+{"ts_ms":1759687807816,"source":"axiom","level":"info","message":"runtime starting","kv":null}
+{"ts_ms":1759687807816,"source":"hello","level":"info","message":"hello module warming up","kv":null}
+{"ts_ms":1759687807816,"source":"epoch","level":"info","message":"completed job 1","kv":null}

@@ -1,4 +1,9 @@
-use hyperion::{init_telemetry, load_config, Module, Runtime, Health, Result};
+use std::path::Path;
+
+use hyperion::{
+    init_telemetry, load_config, Result, Runtime, Module, Health,
+    Vaultline, Event,
+};
 
 struct Hello {
     running: bool,
@@ -27,19 +32,29 @@ fn main() -> Result<()> {
     // Load config + init logs
     let cfg = load_config()?;
     init_telemetry(&cfg)?;
-
     tracing::info!(version = VERSION, data_dir = %cfg.data_dir, "HYPERION starting");
 
-    // Build a tiny runtime and register one demo module
+    // Vaultline demo
+    let log_path = Path::new(&cfg.data_dir).join("event.log");
+    let mut vault = Vaultline::new(&log_path)?;
+    let _ = vault.load_from_disk()?;
+
+    vault.append(Event::now("axiom", "info", "runtime starting"))?;
+    vault.append(Event::now("hello", "info", "hello module warming up"))?;
+
+    if let Some(last) = vault.tail(1).into_iter().next() {
+        tracing::info!(last_level = %last.level, last_source = %last.source, last_msg = %last.message, "vaultline tail(1)");
+    }
+
+    // Runtime demo
     let mut rt = Runtime::new();
     rt.register(Hello { running: false });
 
-    // Start -> report health -> stop
     rt.start_all()?;
-    tracing::info!(rt_overall = format!("{:?}", rt.overall_health()), "runtime health after start");
+    tracing::info!(overall = ?rt.overall_health(), "runtime health after start");
 
     rt.stop_all()?;
-    tracing::info!(rt_overall = format!("{:?}", rt.overall_health()), "runtime health after stop");
+    tracing::info!(overall = ?rt.overall_health(), "runtime health after stop");
 
     Ok(())
 }

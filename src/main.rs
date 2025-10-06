@@ -43,6 +43,7 @@ fn main() -> Result<()> {
     // Basic vaultline demo
     vault.append(Event::now("axiom", "info", "runtime starting"))?;
     vault.append(Event::now("hello", "info", "hello module warming up"))?;
+    
     if let Some(last) = vault.tail(1).into_iter().next() {
         tracing::info!(last_level = %last.level, last_source = %last.source, last_msg = %last.message, "vaultline tail(1)");
     }
@@ -50,6 +51,7 @@ fn main() -> Result<()> {
     // Epoch demo
     let _j1 = sched.enqueue("email", "Welcome to Hyperion!");
     let _j2 = sched.enqueue("email", "Send follow-up");
+
     if let Some(job) = sched.dequeue("email", Duration::from_secs(5)) {
         tracing::info!(id = job.id, kind = %job.kind, payload = %job.payload, "dequeued job");
         sched.complete(job.id)?;

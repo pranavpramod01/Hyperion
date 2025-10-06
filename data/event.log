@@ -15,3 +15,6 @@
 {"ts_ms":1759708376222,"source":"axiom","level":"info","message":"runtime starting","kv":null}
 {"ts_ms":1759708376222,"source":"hello","level":"info","message":"hello module warming up","kv":null}
 {"ts_ms":1759708376222,"source":"epoch","level":"info","message":"completed job 1","kv":null}
+{"ts_ms":1759709195626,"source":"axiom","level":"info","message":"runtime starting","kv":null}
+{"ts_ms":1759709195626,"source":"hello","level":"info","message":"hello module warming up","kv":null}
+{"ts_ms":1759709195626,"source":"epoch","level":"info","message":"completed job 1","kv":null}

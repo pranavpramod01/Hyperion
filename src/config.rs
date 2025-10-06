@@ -31,7 +31,6 @@ mod tests {
 
     #[test]
     fn defaults_when_missing() {
-        // Keep unsafe if your toolchain insists.
         unsafe { std::env::set_var("HYPERION_CONFIG", "___does_not_exist___hyperion.toml"); }
         let cfg = load_config().unwrap();
         assert_eq!(cfg.log_level, "info");
